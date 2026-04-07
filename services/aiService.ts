@@ -1,8 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { Student, LayoutDetails, RowsLayoutDetails } from '../types';
 
-const ai = new GoogleGenAI({apiKey: process.env.GEMINI_API_KEY});
-
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 export const getAIConstraintUpdates = async (userPrompt: string, students: Student[], layoutType: 'rows' | 'groups', layoutDetails?: LayoutDetails): Promise<any> => {
     if (students.length === 0) {
         throw new Error("Cannot process AI request without a list of students.");
