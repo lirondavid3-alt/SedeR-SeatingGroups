@@ -1,9 +1,8 @@
 {
-  "apiKey": "AIzaSyAMBm0G6eF04rammDT7kj7gYNSL7LMLkhY",
-  "authDomain": "seder-seatinggroups-389ef.firebaseapp.com",
-  "projectId": "seder-seatinggroups-389ef",
-  "storageBucket": "seder-seatinggroups-389ef.firebasestorage.app",
-  "messagingSenderId": "297994218676",
-  "appId": "1:297994218676:web:87b1ae3b7c88e7ede7bbe1",
-  "measurementId": "G-4JDZ1FG656"
+  "apiKey": "AIzaSyBRJoTiWXXKTvotF39Hj3Wp7nXyeKW_rBI",
+  "authDomain": "seder-seatinggroups.firebaseapp.com",
+  "projectId": "seder-seatinggroups",
+  "storageBucket": "seder-seatinggroups.firebasestorage.app",
+  "messagingSenderId": "936961870452",
+  "appId": "1:936961870452:web:cb45932bf28ff9e4309f21"
 }
