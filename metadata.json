@@ -1,0 +1,9 @@
+{
+  "name": "SedeR SeatingGroups",
+  "description": "אפליקציה מקצועית ליצירת מפות ישיבה, חלוקה לקבוצות וניהול כיתה חכם.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

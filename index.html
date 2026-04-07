@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מפות ישיבה וחלוקה לקבוצות</title>
+    <script>
+      console.log("--- [BOOTSTRAP] index.html loaded - Version 1.1.0 ---");
+      window.APP_VERSION = "1.1.0";
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Heebo', sans-serif; }
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-spin-fast { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        /* --- STYLES FOR PRINT --- */
+        @media print {
+            @page { 
+                size: A4 landscape; 
+                margin: 1cm; /* Increased margin for safety */
+            }
+            
+            body, html {
+                background: #fff !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Isolate the printable area */
+            body * { visibility: hidden !important; }
+            #printable-area, #printable-area * { visibility: visible !important; }
+            
+            #printable-area {
+                width: fit-content !important;
+                min-width: 800px !important;
+                height: auto !important;
+                margin: 0 auto !important;
+                padding: 1cm !important;
+                box-shadow: none !important;
+                display: block !important;
+                position: relative !important;
+                background: white !important;
+            }
+            
+            .classroom-grid {
+                 gap: 1rem !important;
+                 margin: 0 auto !important;
+            }
+
+            .desk-container {
+                border: 1.5px solid #0f766e !important; /* Teal-700 */
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                width: 160px !important;
+                height: 90px !important;
+            }
+            .student-picture {
+                width: 3rem !important; /* Reduced size */
+                height: 3rem !important; /* Reduced size */
+            }
+            .student-name {
+                font-size: 0.8rem !important; /* Reduced font size */
+                font-weight: 600 !important;
+                color: #000 !important;
+            }
+            
+            /* Target the rating indicators container and scale it down */
+            .desk-container div[class*="scale-"] {
+                transform: scale(0.75) !important;
+                margin-top: 0 !important;
+            }
+
+            .seat-number, .absolute.bottom-0.right-0 {
+                display: none !important;
+            }
+            
+             /* Group printing styles */
+            #printable-area .grid[class*="grid-cols-"] {
+                display: block !important;
+            }
+            #printable-area .grid[class*="grid-cols-"] > div {
+                page-break-inside: avoid !important;
+                margin-bottom: 1cm !important;
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-700">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - firstName: string (optional)
+    //   - lastName: string (optional)
+    //   - schoolName: string (optional)
+    //   - role: string (required) - 'admin' | 'user'
+    //   - isFrozen: boolean (optional)
+    //   - lastUpdated: timestamp/string (optional)
+    //
+    // Collection: charts
+    // Document ID: {chartId}
+    // Fields:
+    //   - id: string (required)
+    //   - ownerId: string (required) - matches user uid
+    //   - className: string (required)
+    //   - sharedWithEmails: list (optional) - [email1, email2, ...]
+    //   - students: list (required)
+    //   - lastUpdated: string (optional)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && 
+             request.auth.token.email.lower() == "lirondavid3@gmail.com";
+    }
+
+    function isAdmin() {
+      return isSuperAdmin() || 
+             (isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    // Global override for Super Admin - MUST BE AT THE TOP
+    match /{document=**} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Users collection
+    match /users/{userId} {
+      // Allow all authenticated users to read profiles (needed for sharing/searching)
+      allow read: if isAuthenticated();
+      
+      // Super admin has full control over user documents
+      allow write: if isSuperAdmin();
+      
+      allow create: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      
+      // Allow users to update their own profile (but not their role)
+      // Allow admins to update any profile
+      // Allow any authenticated user to add a notification to another user
+      allow update: if isAuthenticated() && (
+        (isOwner(userId) && request.resource.data.role == resource.data.role) || 
+        isAdmin() ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['notifications']))
+      );
+      
+      // Super admin can delete anyone. Regular admin can delete anyone except the super admin.
+      allow delete: if isAdmin() && (
+        !('email' in resource.data) || 
+        resource.data.email.lower() != "lirondavid3@gmail.com" || 
+        isSuperAdmin()
+      );
+    }
+
+    // Charts collection (Top-level)
+    match /charts/{chartId} {
+      // Allow read if owner, admin, or shared with
+      allow read: if isAuthenticated() && (
+        resource.data.ownerId == request.auth.uid || 
+        isAdmin() || 
+        (resource.data.sharedWithEmails != null && request.auth.token.email.lower() in resource.data.sharedWithEmails)
+      );
+      
+      // Allow create if owner or admin
+      allow create: if isAuthenticated() && (
+        (request.resource.data.ownerId == request.auth.uid) || 
+        isAdmin()
+      );
+      
+      // Allow update: if owner, admin, or shared as editor
+      allow update: if isAuthenticated() && (
+        (resource.data.ownerId == request.auth.uid) || 
+        isAdmin() ||
+        (resource.data.sharedWithEmails != null && request.auth.token.email.lower() in resource.data.sharedWithEmails)
+      );
+
+      // Allow delete: if owner or admin
+      allow delete: if isAuthenticated() && (
+        (resource.data.ownerId == request.auth.uid) || 
+        isAdmin()
+      );
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

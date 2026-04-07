@@ -1,0 +1,146 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores teacher profile, analytics, and sharing history.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "location": { "type": "string" },
+        "subjects": { "type": "array", "items": { "type": "string" } },
+        "classes": { "type": "array", "items": { "type": "string" } },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "isFrozen": { "type": "boolean" },
+        "subscriptionPlan": { "type": "string", "enum": ["free", "pro", "enterprise"] },
+        "subscriptionExpiry": { "type": "string", "format": "date-time" },
+        "stats": {
+          "type": "object",
+          "properties": {
+            "firstLogin": { "type": "string", "format": "date-time" },
+            "lastLogin": { "type": "string", "format": "date-time" },
+            "loginCount": { "type": "integer" },
+            "loginHistory": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+          }
+        },
+        "shareHistory": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "email": { "type": "string" },
+              "name": { "type": "string" },
+              "schoolName": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "message": { "type": "string" }
+            }
+          }
+        },
+        "notifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "type": { "type": "string" },
+              "fromName": { "type": "string" },
+              "fromEmail": { "type": "string" },
+              "chartId": { "type": "string" },
+              "chartName": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" },
+              "read": { "type": "boolean" },
+              "message": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["uid", "email", "firstName", "lastName", "schoolName", "role", "stats"]
+    },
+    "Class": {
+      "title": "Class",
+      "description": "Represents a classroom with its students and seating charts.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "socialConstraints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "student1": { "type": "string" },
+              "student2": { "type": "string" },
+              "type": { "type": "string", "enum": ["together", "separate"] }
+            }
+          }
+        },
+        "creationDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "creationDate"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Master record for a student in a class.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "gender": { "type": "string", "enum": ["זכר", "נקבה", "אחר"] },
+        "academicLevel": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "behaviorLevel": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "picture": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "SeatingChart": {
+      "title": "Seating Chart",
+      "description": "A specific seating arrangement for a class.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "layoutDetails": { "type": "object" },
+        "generatedLayout": { "type": "object" },
+        "creationDate": { "type": "string", "format": "date-time" },
+        "ownerId": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "ownerSchool": { "type": "string" },
+        "sharedWith": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "email": { "type": "string" },
+              "name": { "type": "string" },
+              "schoolName": { "type": "string" },
+              "timestamp": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "isShared": { "type": "boolean" },
+        "isOriginal": { "type": "boolean" },
+        "sharedMessage": { "type": "string" }
+      },
+      "required": ["name", "layoutDetails", "generatedLayout", "creationDate", "ownerId"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "User document containing their profile."
+    },
+    "/users/{uid}/classes/{classId}": {
+      "schema": "Class",
+      "description": "Subcollection of classes owned by the user."
+    },
+    "/users/{uid}/classes/{classId}/students/{studentId}": {
+      "schema": "Student",
+      "description": "Master student list for a specific class."
+    },
+    "/users/{uid}/classes/{classId}/charts/{chartId}": {
+      "schema": "SeatingChart",
+      "description": "Seating charts generated for a specific class."
+    }
+  }
+}
