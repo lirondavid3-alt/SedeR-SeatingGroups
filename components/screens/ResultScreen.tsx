@@ -14,9 +14,10 @@ interface ResultScreenProps {
     onGoToEditor: () => void;
     onUpdateChart: (chart: Chart) => void;
     onClearPins?: () => void;
+    isAdmin?: boolean;
 }
 
-const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoToEditor, onUpdateChart, onClearPins }) => {
+const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoToEditor, onUpdateChart, onClearPins, isAdmin }) => {
     const [studentToEdit, setStudentToEdit] = useState<Student | null>(null);
     const [swapConflict, setSwapConflict] = useState<{ violations: Violation[]; onConfirm: () => void } | null>(null);
     const [viewMode, setViewMode] = useState<'teacher' | 'student'>('teacher');
@@ -46,7 +47,6 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoTo
     const handleSaveStudent = (updatedStudent: Student) => {
         const updatedStudents = chart.students.map(s => s.id === updatedStudent.id ? updatedStudent : s);
         const updatedChart = { ...chart, students: updatedStudents };
-        // Immediately regenerate the chart with the new student data for instant feedback
         onRegenerate(updatedChart);
         setStudentToEdit(null);
     };
@@ -106,36 +106,27 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoTo
         const draggedDesk = draggedInfo.row === -1 ? null : (generatedLayout as GeneratedRowsLayout).desks.find(d => d.row === draggedInfo.row && d.col === draggedInfo.col);
         const droppedDesk = (generatedLayout as GeneratedRowsLayout).desks.find(d => d.row === droppedInfo.row && d.col === droppedInfo.col);
         
-        // Correctly identify the deskmates after the swap
-        // If swapping A and B in the same desk, their deskmates remain each other.
-        // If swapping A and B in different desks, A's new deskmate is B's old deskmate, and vice versa.
         let draggedDeskMateId: string | undefined;
         let droppedDeskMateId: string | undefined;
 
         if (draggedInfo.row === droppedInfo.row && draggedInfo.col === droppedInfo.col) {
-            // Same desk swap
             draggedDeskMateId = droppedInfo.studentId;
             droppedDeskMateId = draggedInfo.studentId;
         } else {
-            // Different desk swap
             draggedDeskMateId = droppedDesk?.students.find(s => s.seat !== droppedInfo.seat)?.id;
             droppedDeskMateId = draggedDesk?.students.find(s => s.seat !== draggedInfo.seat)?.id;
         }
 
-        // --- VALIDATION LOGIC ---
         const violations: Violation[] = [
             ...checkStudentConstraints(draggedStudent, droppedInfo, droppedDeskMateId, students),
             ...checkStudentConstraints(droppedStudent, draggedInfo, draggedDeskMateId, students)
         ];
 
-        // --- SWAP LOGIC ---
         const performSwap = () => {
             const newChart = JSON.parse(JSON.stringify(chart));
             const newLayout = newChart.generatedLayout as GeneratedRowsLayout;
             
-            // 1. Swap names and IDs in the visual layout
             if (draggedInfo.row === -1) {
-                // From unplaced list
                 const unplacedIndex = newLayout.unplacedStudents.findIndex(s => s.id === draggedInfo.studentId);
                 const desk2 = newLayout.desks.find(d => d.row === droppedInfo.row && d.col === droppedInfo.col);
                 const seat2 = desk2?.students.find(s => s.seat === droppedInfo.seat);
@@ -187,19 +178,15 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoTo
         const draggedStudent = students.find(s => s.id === draggedInfo.studentId);
         if (!draggedStudent) return;
 
-        // --- VALIDATION LOGIC ---
         const targetDesk = (generatedLayout as GeneratedRowsLayout).desks.find(d => d.row === droppedInfo.row && d.col === droppedInfo.col);
         const targetDeskMateId = targetDesk?.students.find(s => s.seat !== droppedInfo.seat)?.id;
         const violations = checkStudentConstraints(draggedStudent, droppedInfo, targetDeskMateId, students);
 
-        // --- MOVE LOGIC ---
         const performMove = () => {
             const newChart = JSON.parse(JSON.stringify(chart));
             const newLayout = newChart.generatedLayout as GeneratedRowsLayout;
             
-            // 1. Remove student from original location (desk or unplaced list)
             if (draggedInfo.row === -1) {
-                // From unplaced list
                 if (newLayout.unplacedStudents) {
                     const studentIndex = newLayout.unplacedStudents.findIndex(s => s.id === draggedInfo.studentId);
                     if (studentIndex > -1) {
@@ -207,7 +194,6 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoTo
                     }
                 }
             } else {
-                // From a desk
                 const sourceDesk = newLayout.desks.find(d => d.row === draggedInfo.row && d.col === draggedInfo.col);
                 if (sourceDesk) {
                     const studentIndex = sourceDesk.students.findIndex(s => s.seat === draggedInfo.seat);
@@ -217,19 +203,15 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoTo
                 }
             }
 
-            // 2. Add student to new desk in layout
             let destDesk = newLayout.desks.find(d => d.row === droppedInfo.row && d.col === droppedInfo.col);
             
-            // If the desk doesn't exist in the layout (shouldn't happen but for safety), create it
             if (!destDesk) {
                 destDesk = { row: droppedInfo.row, col: droppedInfo.col, students: [] };
                 newLayout.desks.push(destDesk);
             }
 
-            // Ensure we don't have a student in the same seat already
             const existingSeatIndex = destDesk.students.findIndex(s => s.seat === droppedInfo.seat);
             if (existingSeatIndex > -1) {
-                // This shouldn't happen if handleDropOnEmpty is used correctly, but let's be safe
                 destDesk.students.splice(existingSeatIndex, 1);
             }
 
@@ -260,13 +242,11 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoTo
         if (!sourceGroup || !destGroup || sourceGroup.groupNumber === destGroup.groupNumber) return;
 
         const violations: Violation[] = [];
-        const getStudentObj = (id: string) => students.find(s => s.id === id);
 
         const draggedConstraints = { ...DEFAULT_STUDENT_CONSTRAINTS, ...(draggedStudent.constraints || {}) };
         if (draggedConstraints.dontSitWith && draggedConstraints.dontSitWith.length > 0) {
             for (const studentNameInDest of destGroup.students) {
                 if (studentNameInDest === droppedStudent.name) continue;
-                // Find student by name in dest group (since groups currently only store names)
                 const studentInDest = students.find(s => s.name === studentNameInDest);
                 if (studentInDest && draggedConstraints.dontSitWith.includes(studentInDest.id)) {
                     violations.push({ studentName: draggedStudent.name, message: `אסור להיות בקבוצה עם ${studentInDest.name}` });
@@ -376,14 +356,12 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoTo
             return;
         }
 
-        // Create a new window for printing to bypass iframe restrictions
         const printWindow = window.open('', '_blank');
         if (!printWindow) {
             toast.error('הדפדפן חסם את פתיחת חלון ההדפסה. אנא אפשר פופ-אפים לאתר זה.');
             return;
         }
 
-        // Get all styles from the current document to ensure the print looks correct
         let styles = '';
         try {
             styles = Array.from(document.styleSheets)
@@ -420,7 +398,6 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoTo
                             box-shadow: none !important; 
                             border: none !important;
                         }
-                        /* Ensure the grid looks good on print */
                         .classroom-grid, .groups-grid {
                             margin: 0 auto !important;
                         }
@@ -433,16 +410,10 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoTo
                     </div>
                     <script>
                         window.onload = () => {
-                            // Small delay to ensure everything is rendered
                             setTimeout(() => {
                                 window.focus();
                                 window.print();
-                                // We don't close automatically to allow the user to retry if needed
-                                // but we can close after a long delay or on focus back
-                                window.onfocus = () => {
-                                    // Optional: close window when user returns from print dialog
-                                    // setTimeout(() => window.close(), 500);
-                                };
+                                window.onfocus = () => {};
                             }, 500);
                         };
                     </script>
@@ -471,7 +442,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({ chart, onRegenerate, onGoTo
                 </div>
 
                 <div className="flex flex-wrap justify-center gap-3">
-                    {chart.webhookUrl && (
+                    {isAdmin && chart.webhookUrl && (
                         <button 
                             onClick={handleExportToMake}
                             disabled={isExporting}
