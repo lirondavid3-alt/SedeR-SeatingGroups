@@ -1301,6 +1301,9 @@ const App: React.FC = () => {
                     onGoToEditor={() => setCurrentScreen('editor')}
                     onUpdateChart={(updatedChart) => handleSetEditingChart(updatedChart)}
                     onClearPins={handleClearPins}
+                                      
+                    isAdmin={currentUser?.role === 'admin' || currentUser?.email === ADMIN_EMAIL}
+    
                 />;
             case 'admin':
                 return currentUser ? <AdminPanel user={currentUser} onBack={() => setCurrentScreen('main')} onLoadChart={handleLoadChart} /> : null;
