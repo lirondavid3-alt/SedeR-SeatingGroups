@@ -646,23 +646,7 @@ const RowsSettings: React.FC<{
                 />
             </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-200">
-                <label className="text-sm font-bold text-indigo-600 flex items-center gap-2 mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.826L10.242 9.172a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102 1.101" />
-                    </svg>
-                    אוטומציה (Make.com Webhook)
-                </label>
-                <input 
-                    type="url" 
-                    value={webhookUrl || ''} 
-                    onChange={(e) => onWebhookUrlChange(e.target.value)}
-                    placeholder="https://hook.make.com/..."
-                    disabled={isReadOnly}
-                    className="w-full p-2 border rounded-md text-sm font-mono disabled:bg-slate-100 disabled:text-slate-500"
-                />
-                <p className="text-[10px] text-slate-400 mt-1">הזן את ה-URL של ה-Webhook כדי לאפשר ייצוא נתונים.</p>
-            </div>
+           
         </div>
     );
 };
@@ -732,23 +716,7 @@ const GroupsSettings: React.FC<{
             )}
         </div>
 
-        <div className="mt-6 pt-4 border-t border-slate-200">
-            <label className="text-sm font-bold text-indigo-600 flex items-center gap-2 mb-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.826L10.242 9.172a4 4 0 015.656 0l4 4a4 4 0 01-5.656 5.656l-1.102 1.101" />
-                </svg>
-                אוטומציה (Make.com Webhook)
-            </label>
-            <input 
-                type="url" 
-                value={webhookUrl || ''} 
-                onChange={(e) => onWebhookUrlChange(e.target.value)}
-                placeholder="https://hook.make.com/..."
-                disabled={isReadOnly}
-                className="w-full p-2 border rounded-md text-sm font-mono disabled:bg-slate-100 disabled:text-slate-500"
-            />
-            <p className="text-[10px] text-slate-400 mt-1">הזן את ה-URL של ה-Webhook כדי לאפשר ייצוא נתונים.</p>
-        </div>
+       
     </div>
 );
 
