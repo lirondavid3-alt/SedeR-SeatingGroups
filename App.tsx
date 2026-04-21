@@ -6,7 +6,7 @@ import { generateLayout } from './services/layoutService';
 import { auth, db, createUserProfile } from './services/firebase';
 import { trackLogin, getUserProfile } from './services/firebase';
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { onSnapshot, doc, getDocFromCache, getDocFromServer, collection, query, where, updateDoc } from "firebase/firestore";
+import { onSnapshot, doc, getDocFromCache, getDocFromServer, collection, query, where, updateDoc, getDocs } from "firebase/firestore";
 import LoginScreen from './components/screens/LoginScreen';
 import MainScreen from './components/screens/MainScreen';
 import EditorScreen from './components/screens/EditorScreen';
@@ -23,7 +23,11 @@ import { FirestoreQuotaError } from './services/storageService';
 import { AlertTriangle } from 'lucide-react';
 
 const ADMIN_EMAIL = "lirondavid3@gmail.com";
-
+const checkIfUserAllowed = async (email: string): Promise<boolean> => {
+    const q = query(collection(db, "allowedUsers"), where("email", "==", email.toLowerCase()));
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
+};
 const MainHeader: React.FC<{ 
     user: User | null; 
     profile: UserProfile | null;
@@ -128,7 +132,15 @@ const App: React.FC = () => {
                 try {
                     // Load initial profile data
                     let profileData = await loadUserProfile(firebaseUser.uid);
-                    
+                    if (firebaseUser.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+                        const isAllowed = await checkIfUserAllowed(firebaseUser.email);
+                        if (!isAllowed) {
+                            await signOut(auth);
+                            toast.error("אין לך הרשאה להיכנס למערכת. פנה למנהל.");
+                            setIsLoading(false);
+                            return;
+                        }
+                    }
                     // SELF-REPAIR: If super admin profile is missing, create it automatically
                     if (!profileData && firebaseUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                         console.log("Self-repairing super admin profile...");
