@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { auth, googleProvider } from '../../services/firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithRedirect } from "firebase/auth";
 
 interface LoginScreenProps {
     onLogin: (email: string) => void;
@@ -29,8 +29,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         const performLogin = async (retryCount = 0): Promise<void> => {
             try {
                 console.log(`Starting Google Login with signInWithPopup (attempt ${retryCount + 1})...`);
-                const result = await signInWithPopup(auth, googleProvider);
-                console.log("Google Login successful:", result.user.email);
+                await signInWithRedirect(auth, googleProvider);
+               
             } catch (err: any) {
                 if (err.code === 'auth/network-request-failed' && retryCount < 1) {
                     console.warn("Network error during login, retrying once...");
