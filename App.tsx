@@ -5,7 +5,7 @@ import { loadUserProfile, saveUserCharts, loadUserCharts, updateUserAdminFields,
 import { generateLayout } from './services/layoutService';
 import { auth, db, createUserProfile } from './services/firebase';
 import { trackLogin, getUserProfile } from './services/firebase';
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, getRedirectResult } from "firebase/auth";
 import { onSnapshot, doc, getDocFromCache, getDocFromServer, collection, query, where, updateDoc, getDocs } from "firebase/firestore";
 import LoginScreen from './components/screens/LoginScreen';
 import MainScreen from './components/screens/MainScreen';
