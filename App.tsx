@@ -126,6 +126,7 @@ const App: React.FC = () => {
             }
         };
         testConnection();
+        getRedirectResult(auth).catch(err => console.error("Redirect error:", err));
 
         const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser && firebaseUser.email) {
