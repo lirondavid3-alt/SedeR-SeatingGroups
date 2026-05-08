@@ -4,5 +4,6 @@
   "projectId": "seder-seatinggroups",
   "storageBucket": "seder-seatinggroups.firebasestorage.app",
   "messagingSenderId": "936961870452",
-  "appId": "1:936961870452:web:cb45932bf28ff9e4309f21"
+  "appId": "1:936961870452:web:cb45932bf28ff9e4309f21",
+  "firestoreDatabaseId": "(default)"
 }
